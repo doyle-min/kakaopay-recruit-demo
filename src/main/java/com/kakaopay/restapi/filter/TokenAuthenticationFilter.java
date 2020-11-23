@@ -27,15 +27,20 @@ public class TokenAuthenticationFilter extends BasicAuthenticationFilter {
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-		String token = getJwtFormRequest(request);
-		if (StringUtils.hasText(token) && tokenProvider.verifyToken(token)) {
-			Long userNo = tokenProvider.getUserNoFromToken(token);
-			tokenProvider.getUserNoFromToken(token);
+		try {
+			String token = getJwtFormRequest(request);
+			if (StringUtils.hasText(token) && tokenProvider.verifyToken(token)) {
+				Long userNo = tokenProvider.getUserNoFromToken(token);
+				tokenProvider.getUserNoFromToken(token);
 
-			UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userNo, null, null);
-			authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+				UsernamePasswordAuthenticationToken authenticationToken =
+						new UsernamePasswordAuthenticationToken(userNo, null, null);
+				authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-			SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+				SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+			}
+		} catch (Exception e) {
+
 		}
 
 		filterChain.doFilter(request, response);
