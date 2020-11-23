@@ -122,7 +122,7 @@ Generic을 사용할 수 없는 static scope에서는 불가능하다고 판단�
 대신 CsvEntityAdapter 추상클래스를 만들고, 
 Entity마다 필요시 매핑만 재정의한 클래스를 생성하도록 했습니다. 
 ```
-```
+```java
 public abstract class CsvEntityAdapter<T> {
 
 	public abstract T mapRow(String row);
