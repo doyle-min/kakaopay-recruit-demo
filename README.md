@@ -60,8 +60,94 @@ $ java -jar build/libs/kakaopay-recruit-demo-0.0.1-SNAPSHOT.jar
 3. 대용량 트랙픽(TPS 10K 이상)을 고려한 시스템 구현 성능테스트 결과 / 피드백
 ```
 
-## 해결방법
-1. 랜덤한 코드의 쿠폰을 N개 생성하여 데이터베이스에 보관하는 API를 구현
-- Post /coupon/make
-- 
+## 문제해결방법
 
+데이터 스키마 및 Entity 설정
+```
+- 기능을 데이터 관점에서 [사용자 등록/로그인], [쿠폰 조회/수정], [사용자쿠폰 발급/사용/취소] 로 그룹화 하여 생각했습니다.
+- 테이블은 User, Coupon, UserCoupons 3개로 분리하여 정규화 하였으며,
+- 각 Entity에서는 타 Entity에대해 조회만 할 수 있고 수정(insert, update)할 수 없도록 설정하여 관점을 분리 하였습니다.
+- 사용자 관련 기능은 UserController - UserService - UserRepository를 거쳐 User Entity만 Upsert 됩니다. 쿠폰, 사용자 쿠폰에서도 동일하게 도메인을 분리합니다.
+- 만료일 기준 쿠폰 조회를 위하여 ExpireDate 컬럼에 인덱스를 생성하였습니다. 
+```
+
+VO
+```
+사용자 입력은 Dto 로 받고, Validation 합니다.
+Service 단에서 Entity 조회/수정/Upsert가 이러워지고,
+모든 요청에 대한 응답은 표준적인 응답 포맷(code, messge, data)을 가진 ResultResponse안에 data object로 전달합니다.
+```
+
+Authentication
+```
+인증은 제시된 대로 JWT(jjwt)를 사용하였습니다.
+TokenAuthenticationFilter에서 토큰을 검증하고 SecurityContextHolder를 세팅합니다.
+회원가입/로그인 요청시에는 필터가 적용되지 않습니다.
+사용자번호가 있더라도 확실한 검증이 필요한 경우 유효한 정보인지 DB에서 재확인합니다.
+```
+```
+	public AuthTokenResponse create(User user){
+		Date expireDate = DateUtils.addSeconds(new Date(), expireTimeSeconds);
+		JwtBuilder builder = Jwts.builder()
+				.setHeaderParam("typ", "JWT")
+				.setHeaderParam("alg", "HS256")
+				.setHeaderParam("regDate", System.currentTimeMillis())
+				.setAudience(user.getUserId())
+				.setExpiration(expireDate)
+				.claim("authGroup", "default")
+				.setSubject(user.getUserNo().toString());
+
+		String token = builder.signWith(SignatureAlgorithm.HS256, secretKey).compact();
+
+		AuthTokenResponse loginResponse = new AuthTokenResponse(token, expireDate);
+
+		return loginResponse;
+	}
+
+	public boolean verifyToken(String token) throws RuntimeException {
+		try{
+			Jwts.parser().setSigningKey(secretKey).parse(token);
+		} catch (Exception e) {
+
+		}
+		return true;
+	}
+```
+
+CSV Import
+```
+파일은 스프링의 MultiPartFile 형태로 업로드합니다.
+CSV 행을 Entity로 매핑 시 원래는 범용으로 사용할수 있는 유틸성 정적 메서드를 만들고 싶었으나, 
+Generic을 사용할 수 없는 static scope에서는 불가능하다고 판단했습니다.
+대신 CsvEntityAdapter 추상클래스를 만들고, 
+Entity마다 필요시 매핑만 재정의한 클래스를 생성하도록 했습니다. 
+```
+```
+public abstract class CsvEntityAdapter<T> {
+
+	public abstract T mapRow(String row);
+
+	public Function<String, T> mapFunction(){
+		return s -> mapRow(s);
+	}
+
+	public List<T> parseList(MultipartFile file) throws IOException {
+		BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()));
+		List<T> list = reader.lines().map(mapFunction()).collect(Collectors.toList());
+		return list;
+	}
+
+	public Iterator<T> iterator(MultipartFile file) throws IOException {
+		BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()));
+		return reader.lines().map(mapFunction()).iterator();
+	}
+
+	public Stream<T> stream(MultipartFile file) throws IOException {
+		Iterator iter = iterator(file);
+		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(
+				iter, Spliterator.ORDERED | Spliterator.NONNULL), false);
+	}
+
+}
+
+```
