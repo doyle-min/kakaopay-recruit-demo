@@ -71,7 +71,10 @@ $ java -jar build/libs/kakaopay-recruit-demo-0.0.1-SNAPSHOT.jar
 - 만료일 기준 쿠폰 조회를 위하여 ExpireDate 컬럼에 인덱스를 생성하였습니다. 
 - 만료된 쿠폰을 unique하게 얻어올때는 쿠폰 테이블을,
     사용자의 사용되지 않은 쿠폰 조회시에는 사용자 쿠폰 테이블을,
-    곧 만료될 쿠폰의 사용자 정보는 쿠폰>사용자쿠폰>사용자 테이블 INNER JOIN으로 얻어올 수 있습니다.  
+    곧 만료될 쿠폰의 사용자 정보는 쿠폰>사용자쿠폰>사용자 테이블 INNER JOIN으로 얻어올 수 있습니다.
+- 각 Entity는 등록일, 수정일, 등록자id, 수정자id가 있습니다.
+- 등록자/수정자 ID로 기록될 시그니처는 enum 및 Entity의 default value로 관리합니다.
+
 ```
 
 VO
@@ -83,7 +86,10 @@ Service 단에서 Entity 조회/수정/Upsert가 이러워지고,
 
 Authentication
 ```
+로그인 패스워드는 BCryptPasswordEncoder로 암호화 합니다.
+암호문끼리의 비교가 성공하면, 
 인증은 제시된 대로 JWT(jjwt)를 사용하였습니다.
+
 TokenAuthenticationFilter에서 토큰을 검증하고 SecurityContextHolder를 세팅합니다.
 회원가입/로그인 요청시에는 필터가 적용되지 않습니다.
 사용자번호가 있더라도 확실한 검증이 필요한 경우 유효한 정보인지 DB에서 재확인합니다.
@@ -227,7 +233,7 @@ public abstract class CsvEntityAdapter<T> {
 
 ```
 
-쿠폰 상태값 관리 & 만료예정 쿠폰 조회, 메세지 
+쿠폰 상태값 관리 & 3일내 만료예정 쿠폰 조회, 메세지 
 ```
 - 쿠폰의 사용여부는 사용자쿠폰(userCoupon) 테이블에서 관리합니다.
 - 쿠폰을 사용하면 상태값 enum(CouponUseStatus) 멤버를 UNSED->USED로 변경합니다.

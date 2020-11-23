@@ -4,6 +4,7 @@ import com.kakaopay.restapi.exception.ExceptionAdvisor;
 import com.kakaopay.restapi.util.ResponseParseUtil;
 import org.json.simple.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,7 @@ class UserCouponControllerTest {
 
 
 	@Test
+	@DisplayName("사용자 가입-토큰발급-랜덤쿠폰생성-쿠폰지급-쿠폰사용-쿠폰사용취소")
 	void assign() throws Exception {
 
 		// 로그인 및 토큰 발급

@@ -2,6 +2,7 @@ package com.kakaopay.restapi.controller;
 
 import com.kakaopay.restapi.util.ResponseParseUtil;
 import org.json.simple.JSONObject;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,7 @@ class CouponControllerTest {
 	CouponController controller;
 
 	@Test
+	@DisplayName("랜덤 쿠폰 생성")
 	void make() throws Exception {
 		String token = joinLoginAndGetToken("makeTest");
 
@@ -47,6 +49,7 @@ class CouponControllerTest {
 	}
 
 	@Test
+	@DisplayName("인증 토큰 없이 랜덤 쿠폰 생성 시도 시 오류 확인 ")
 	void makeWithOutToken() throws Exception {
 		MultiValueMap<String, String> paramMap = new LinkedMultiValueMap<>();
 		paramMap.add("quantity", "10");
@@ -61,6 +64,7 @@ class CouponControllerTest {
 	}
 
 	@Test
+	@DisplayName("오늘 만료되는 쿠폰 목록 조회")
 	void expiresToday() throws Exception {
 		String token = joinLoginAndGetToken("expiresToday");
 		MultiValueMap<String, String> paramMap = new LinkedMultiValueMap<>();
@@ -77,6 +81,7 @@ class CouponControllerTest {
 
 
 	@Test
+	@DisplayName("3일 내 만료되는 쿠폰과 유저들 조회")
 	void expires3DaysAfter() throws Exception {
 		String token = joinLoginAndGetToken("expire3daysAfter");
 		MultiValueMap<String, String> paramMap = new LinkedMultiValueMap<>();
@@ -92,6 +97,7 @@ class CouponControllerTest {
 	}
 
 	@Test
+	@DisplayName("CSV 파일 업로드")
 	void upload() throws Exception {
 		String token = joinLoginAndGetToken("upload");
 		MultiValueMap<String, String> paramMap = new LinkedMultiValueMap<>();
