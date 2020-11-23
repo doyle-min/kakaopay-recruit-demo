@@ -13,7 +13,6 @@
 
 
 ## Build 및 실행 방법
-####Command line 
 
 ```
 $ git clone https://github.com/nautilus-alpha/kakaopay-recruit-demo.git
