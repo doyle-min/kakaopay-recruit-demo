@@ -1,0 +1,30 @@
+basepath : /Users/bepo/workspace/kakao-pay-recruit-demo
+
+server:
+  port: 8080
+
+spring:
+#  h2:
+#    console:
+#      enabled: true     # H2 웹 콘솔 사용
+#      path: /h2-console  # 콘솔 접속 경로
+
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:file:${basepath}/db/coupondb;AUTO_SERVER=TRUE
+    username: kakaopay
+    password: coupon
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: false
+
+  servlet:
+    multipart:
+      file-size-threshold: 1MB
+      max-file-size: 5MB
+      max-request-size: 30MB

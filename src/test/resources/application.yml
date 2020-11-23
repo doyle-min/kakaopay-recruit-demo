@@ -1,0 +1,26 @@
+basepath : /Users/bepo/workspace/kakao-pay-recruit-demo
+
+server:
+  port: 8080
+
+
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:file:${basepath}/db/coupondb_test;AUTO_SERVER=TRUE
+    username: kakaopay
+    password: coupon
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: false
+
+  servlet:
+    multipart:
+      file-size-threshold: 1MB
+      max-file-size: 5MB
+      max-request-size: 30MB
