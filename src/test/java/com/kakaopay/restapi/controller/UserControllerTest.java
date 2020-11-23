@@ -73,7 +73,7 @@ class UserControllerTest {
 
 
 		paramMap.clear();
-		paramMap.add("id", "test2");
+		paramMap.add("id", "signupValid");
 		paramMap.add("password", "alpha123!@#");
 
 		mockMvc.perform(MockMvcRequestBuilders.post("/user/signin")
