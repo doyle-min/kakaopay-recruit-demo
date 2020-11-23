@@ -1,15 +1,14 @@
 package com.kakaopay.restapi.service;
 
+import com.kakaopay.restapi.model.dto.BulkInsertResponse;
 import com.kakaopay.restapi.model.dto.CouponExpireResponse;
 import com.kakaopay.restapi.model.dto.CouponResponse;
+import com.kakaopay.restapi.model.dto.ResultResponse;
 import com.kakaopay.restapi.model.entity.Coupon;
 import com.kakaopay.restapi.model.entity.UserCoupon;
 import com.kakaopay.restapi.model.entity.code.CouponType;
 import com.kakaopay.restapi.model.entity.csvEntityAdapter.CsvCouponAdapter;
-import com.kakaopay.restapi.model.dto.BulkInsertResponse;
-import com.kakaopay.restapi.model.dto.ResultResponse;
 import com.kakaopay.restapi.repository.CouponRepository;
-import com.kakaopay.restapi.repository.UserCouponRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,9 +28,6 @@ public class CouponService {
 
 	@Autowired
 	private CouponRepository couponRepository;
-
-	@Autowired
-	private UserCouponRepository userCouponRepository;
 
 	private final CsvCouponAdapter couponAdapter = new CsvCouponAdapter();
 
