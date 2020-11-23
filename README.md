@@ -85,7 +85,7 @@ TokenAuthenticationFilter에서 토큰을 검증하고 SecurityContextHolder를 
 회원가입/로그인 요청시에는 필터가 적용되지 않습니다.
 사용자번호가 있더라도 확실한 검증이 필요한 경우 유효한 정보인지 DB에서 재확인합니다.
 ```
-```
+```java
 	public AuthTokenResponse create(User user){
 		Date expireDate = DateUtils.addSeconds(new Date(), expireTimeSeconds);
 		JwtBuilder builder = Jwts.builder()
