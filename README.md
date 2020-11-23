@@ -13,6 +13,7 @@
 
 
 ## Build 및 실행 방법
+####Command line 
 
 ```
 $ git clone https://github.com/nautilus-alpha/kakaopay-recruit-demo.git
@@ -68,6 +69,9 @@ $ java -jar build/libs/kakaopay-recruit-demo-0.0.1-SNAPSHOT.jar
 - 각 Entity에서는 타 Entity에대해 조회만 할 수 있고 수정(insert, update)할 수 없도록 설정하여 관점을 분리 하였습니다.
 - 사용자 관련 기능은 UserController - UserService - UserRepository를 거쳐 User Entity만 Upsert 됩니다. 쿠폰, 사용자 쿠폰에서도 동일하게 도메인을 분리합니다.
 - 만료일 기준 쿠폰 조회를 위하여 ExpireDate 컬럼에 인덱스를 생성하였습니다. 
+- 만료된 쿠폰을 unique하게 얻어올때는 쿠폰 테이블을,
+    사용자의 사용되지 않은 쿠폰 조회시에는 사용자 쿠폰 테이블을,
+    곧 만료될 쿠폰의 사용자 정보는 쿠폰>사용자쿠폰>사용자 테이블 INNER JOIN으로 얻어올 수 있습니다.  
 ```
 
 VO
@@ -84,7 +88,79 @@ TokenAuthenticationFilter에서 토큰을 검증하고 SecurityContextHolder를 
 회원가입/로그인 요청시에는 필터가 적용되지 않습니다.
 사용자번호가 있더라도 확실한 검증이 필요한 경우 유효한 정보인지 DB에서 재확인합니다.
 ```
-```java
+```
+@Configuration
+public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
+	@Autowired
+	private AuthTokenService tokenProvider;
+
+	@Override
+	protected void configure(HttpSecurity http) throws Exception {
+		http.httpBasic().disable();
+		http.csrf().disable();
+
+		http.authorizeRequests()
+				// h2-console 관련
+				.antMatchers(
+						"/user/**"
+				).permitAll()
+				.anyRequest().authenticated();
+
+		http.addFilterBefore(tokenAuthenticationFilter(authenticationManagerBean()), UsernamePasswordAuthenticationFilter.class);
+	}
+
+```
+```
+
+
+public class TokenAuthenticationFilter extends BasicAuthenticationFilter {
+
+	@Autowired
+	private AuthTokenService tokenProvider;
+
+	public TokenAuthenticationFilter(AuthenticationManager authenticationManager, AuthTokenService tokenProvider) {
+		super(authenticationManager);
+		this.tokenProvider = tokenProvider;
+	}
+
+	@Override
+	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+		try {
+			String token = getJwtFormRequest(request);
+			if (StringUtils.hasText(token) && tokenProvider.verifyToken(token)) {
+				Long userNo = tokenProvider.getUserNoFromToken(token);
+				tokenProvider.getUserNoFromToken(token);
+
+				UsernamePasswordAuthenticationToken authenticationToken =
+						new UsernamePasswordAuthenticationToken(userNo, null, null);
+				authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+				SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+			}
+		} catch (Exception e) {
+
+		}
+
+		filterChain.doFilter(request, response);
+	}
+
+	public String getJwtFormRequest(HttpServletRequest request) {
+		return request.getHeader("Authorization");
+	}
+}
+```
+```
+
+@Service
+public class AuthTokenService {
+
+	@Value("${auth.jwt.secretKey}")
+	private String secretKey;
+
+	@Value("${auth.jwt.expireTimeSeconds}")
+	private int expireTimeSeconds;
+
 	public AuthTokenResponse create(User user){
 		Date expireDate = DateUtils.addSeconds(new Date(), expireTimeSeconds);
 		JwtBuilder builder = Jwts.builder()
@@ -121,7 +197,7 @@ Generic을 사용할 수 없는 static scope에서는 불가능하다고 판단�
 대신 CsvEntityAdapter 추상클래스를 만들고, 
 Entity마다 필요시 매핑만 재정의한 클래스를 생성하도록 했습니다. 
 ```
-```java
+```
 public abstract class CsvEntityAdapter<T> {
 
 	public abstract T mapRow(String row);
@@ -149,4 +225,17 @@ public abstract class CsvEntityAdapter<T> {
 
 }
 
+```
+
+쿠폰 상태값 관리 & 만료예정 쿠폰 조회, 메세지 
+```
+- 쿠폰의 사용여부는 사용자쿠폰(userCoupon) 테이블에서 관리합니다.
+- 쿠폰을 사용하면 상태값 enum(CouponUseStatus) 멤버를 UNSED->USED로 변경합니다.
+- 쿠폰 사용 취소 시에는 반대로 USED->UNUSED로 변경합니다.
+
+- 쿠폰의 만료일자는 쿠폰의 속성, 쿠폰의 사용 여부는 사용자쿠폰의 속성으로 생각하여 각각 테이블에 필드 생성 했습니다.
+- 금일 만료된 쿠폰 조회 쿠폰 테이블에서 expireDate가 금일인 데이터를 조회합니다.
+- 3일 내 만료될 쿠폰 및 사용자 정보 조회 (메세지 보내기)시에는
+  JoinQuery를 사용하지 않고 3일내 만료 쿠폰 목록을 조회한뒤 각각에 대하여 stream하며 userCoupon을 조회합니다.
+    
 ```

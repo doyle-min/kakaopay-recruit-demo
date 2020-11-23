@@ -18,7 +18,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -67,7 +69,16 @@ public class CouponService {
 	public List<CouponExpireResponse> getCouponExpireResponseList(Coupon coupon) {
 		List<UserCoupon> userCoupons = coupon.getUserCoupons();
 		List<CouponExpireResponse> results = new ArrayList<>();
-		userCoupons.forEach(userCoupon -> results.add(new CouponExpireResponse(userCoupon)));
+		userCoupons.forEach(userCoupon -> {
+			CouponExpireResponse response = new CouponExpireResponse(userCoupon);
+			results.add(response);
+			StringBuilder sb = new StringBuilder();
+			sb.append("to : ").append(response.getEmail()).append("\n")
+					.append("message : 쿠폰이 곧 만료됩니다.").append("\n")
+					.append("만료일 : ").append(response.getExpireDate().toString())
+					.append("쿠폰번호 : ").append(response.getCouponNo())
+					.append("쿠폰이름 : ").append(response.getCouponName());
+		});
 		return results;
 	}
 

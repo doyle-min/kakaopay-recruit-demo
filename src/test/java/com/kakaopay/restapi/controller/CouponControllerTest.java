@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -91,15 +92,20 @@ class CouponControllerTest {
 	}
 
 	@Test
-	void upload() {
-//		MultiValueMap<String, String> paramMap = new LinkedMultiValueMap<>();
-//
-//		MvcResult result =
-//				mockMvc.perform(MockMvcRequestBuilders.post("coupon/expires3DaysAfter")
-//						.accept(MediaType.APPLICATION_JSON)
-//						.params(paramMap))
-//						.andExpect(status().is(200))
-//						.andReturn();
+	void upload() throws Exception {
+		String token = joinLoginAndGetToken("upload");
+		MultiValueMap<String, String> paramMap = new LinkedMultiValueMap<>();
+
+		MockMultipartFile firstFile = new MockMultipartFile("files", "csv_import_test.csv", "text/plain", "csv_import_test.csv".getBytes());
+
+		mockMvc.perform(MockMvcRequestBuilders.multipart("/coupon/upload")
+				.file(firstFile)
+				.file(firstFile)
+				.file(firstFile)
+				.accept(MediaType.APPLICATION_JSON)
+				.header("Authorization", token))
+				.andExpect(status().is(200))
+				.andReturn();
 	}
 
 	public String joinLoginAndGetToken(String testId) throws Exception {

@@ -26,6 +26,6 @@ public class CouponExpireResponse {
 		this.couponType = coupon.getCouponType();
 		this.discountAmt = coupon.getDiscountAmt();
 		this.expireDate = coupon.getExpireDate();
-		this.email = user.getUserName();
+		this.email = user.getEmail();
 	}
 }
