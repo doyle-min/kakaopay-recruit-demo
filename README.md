@@ -376,6 +376,8 @@ public abstract class CsvEntityAdapter<T> {
 - 쿠폰의 사용여부는 사용자쿠폰(userCoupon) 테이블에서 관리합니다.
 - 쿠폰을 사용하면 상태값 enum(CouponUseStatus) 멤버를 UNSED->USED로 변경합니다.
 - 쿠폰 사용 취소 시에는 반대로 USED->UNUSED로 변경합니다.
+- 상태값이 변경됨과 함께 사용일시(useDttm)도 set/unset 됩니다.
+- 쿠폰 트랜잭션 테이블로 관리하고 싶었으나, 시간이 부족하여 제하였습니다.
 
 - 쿠폰의 만료일자는 쿠폰의 속성, 쿠폰의 사용 여부는 사용자쿠폰의 속성으로 생각하여 각각 테이블에 필드 생성 했습니다.
 - 금일 만료된 쿠폰 조회 쿠폰 테이블에서 expireDate가 금일인 데이터를 조회합니다.
