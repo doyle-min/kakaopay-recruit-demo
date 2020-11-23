@@ -25,6 +25,9 @@ public class UserCoupon {
 	@Column(length = 10)
 	private CouponUseStatus status;
 
+	@Column
+	private LocalDateTime useDttm;
+
 	@Column(nullable = false)
 	private LocalDateTime regDttm = LocalDateTime.now();
 

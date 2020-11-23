@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -75,12 +76,13 @@ public class UserCouponService {
 
 		userCoupon.setCoupon(coupon);
 		userCoupon.setStatus(CouponUseStatus.USED);
+		userCoupon.setUseDttm(LocalDateTime.now());
 		userCouponRepository.save(userCoupon);
 
 		return new ResultResponse(new UserCouponResponse(userCoupon));
 	}
 
-	public ResultResponse reactivateCoupon(Long userNo, Long couponNo) {
+	public ResultResponse unuseCoupon(Long userNo, Long couponNo) {
 		// validation
 		User user = getUserByUserNo(userNo);
 		if(user==null) throw new IllegalArgumentException(messageService.getMessage("VALIDATION.NO_SUCH_DATA_EXISTS"));
@@ -89,6 +91,7 @@ public class UserCouponService {
 		if(userCoupon==null) throw new IllegalArgumentException(messageService.getMessage("VALIDATION.NO_SUCH_DATA_EXISTS"));
 
 		userCoupon.setStatus(CouponUseStatus.UNUSED);
+		userCoupon.setUseDttm(null);
 		userCouponRepository.save(userCoupon);
 
 		return new ResultResponse(new UserCouponResponse(userCoupon));

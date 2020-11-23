@@ -38,6 +38,6 @@ public class UserCouponController {
 	public ResponseEntity<ResultResponse> unuseUserCoupon(@RequestParam(value = "couponNo", required = true) Long couponNo) throws Exception {
 
 		Long userNo = (Long)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		return ResponseEntity.ok(userCouponService.reactivateCoupon(userNo, couponNo));
+		return ResponseEntity.ok(userCouponService.unuseCoupon(userNo, couponNo));
 	}
 }

@@ -62,6 +62,8 @@ $ java -jar build/libs/kakaopay-recruit-demo-0.0.1-SNAPSHOT.jar
 
 ## 문제해결방법
 
+![structure](./structure.png)
+
 데이터 스키마 및 Entity 설정
 ```
 - 기능을 데이터 관점에서 [사용자 등록/로그인], [쿠폰 조회/수정], [사용자쿠폰 발급/사용/취소] 로 그룹화 하여 생각했습니다.
@@ -76,6 +78,142 @@ $ java -jar build/libs/kakaopay-recruit-demo-0.0.1-SNAPSHOT.jar
 - 등록자/수정자 ID로 기록될 시그니처는 enum 및 Entity의 default value로 관리합니다.
 
 ```
+```
+
+@Entity
+@Table(name="coupons", indexes = {@Index(columnList="expireDate"), @Index(columnList="discountAmt")})
+@Getter@Setter
+@NoArgsConstructor
+public class Coupon {
+
+	@Id @GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(updatable=false)
+	private Long couponNo;
+
+	@Column(nullable = true)
+	private String couponName;
+
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = true)
+	private CouponType couponType = CouponType.RATIO;
+
+	@Column(nullable = true)
+	private Double discountAmt = 5.0d;
+
+	@Column(nullable = false)
+	@Setter
+	private LocalDate expireDate = LocalDate.now().plusDays(7);
+
+	@Column(nullable = false)
+	private LocalDateTime regDttm = LocalDateTime.now();
+
+	@Column(nullable = false)
+	private LocalDateTime modDttm = LocalDateTime.now();
+
+	@Column(nullable = false)
+	private String regrId = TrxSignature.COUPON.getSigniture();
+
+	@Column(nullable = false)
+	private String modrId = TrxSignature.COUPON.getSigniture();
+
+	@OneToMany(fetch=FetchType.LAZY)
+	@JoinColumn(name="couponNo", insertable=false, updatable=false)
+	@ToString.Exclude
+	private List<UserCoupon> userCoupons = new ArrayList<>();
+
+}
+
+```
+```
+
+@Entity
+@Table(name="users")
+@Getter@Setter
+@NoArgsConstructor
+public class User implements Serializable {
+
+	@Id @GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(updatable=false)
+	private Long userNo;
+	@Column(unique=true, updatable=false)
+	private String userId;
+	private String userName;
+	private String password;
+	private String email;
+
+	@Column(nullable = false)
+	private LocalDateTime regDttm = LocalDateTime.now();
+
+	@Column(nullable = false)
+	private LocalDateTime modDttm = LocalDateTime.now();
+
+	@Column(nullable = false)
+	private String regrId = TrxSignature.USER.getSigniture();
+
+	@Column(nullable = false)
+	private String modrId = TrxSignature.USER.getSigniture();
+
+	@OneToMany(fetch=FetchType.LAZY)
+	@JoinColumn(name="userNo", insertable=false, updatable=false)
+	@MapKeyColumn(name="couponNo")
+	@ToString.Exclude
+	private Map<Long,UserCoupon> userCoupons;
+
+}
+
+```
+```
+@Entity
+@Table(name="user_coupons")
+@IdClass(UserCouponId.class)
+@NoArgsConstructor
+@Getter @Setter
+public class UserCoupon {
+
+	@Id
+	@Column(updatable=false)
+	private Long userNo;
+	@Id
+	@Column(updatable=false)
+	private Long couponNo;
+
+	@Enumerated(EnumType.STRING)
+	@Column(length = 10)
+	private CouponUseStatus status;
+
+	@Column
+	private LocalDateTime useDttm;
+
+	@Column(nullable = false)
+	private LocalDateTime regDttm = LocalDateTime.now();
+
+	@Column(nullable = false)
+	private LocalDateTime modDttm = LocalDateTime.now();
+
+	@Column(nullable = false)
+	private String regrId = TrxSignature.USER_COUPON.getSigniture();
+
+	@Column(nullable = false)
+	private String modrId = TrxSignature.USER_COUPON.getSigniture();
+
+	@ManyToOne(fetch=FetchType.LAZY)
+	@JoinColumn(name="couponNo", insertable=false, updatable=false)
+	private Coupon coupon;
+
+	@ManyToOne(fetch=FetchType.LAZY)
+	@JoinColumn(name="userNo", insertable=false, updatable=false)
+	private User user;
+
+	@Override
+	public String toString(){
+		return new StringBuilder(userNo.toString()).append("-").append(couponNo.toString()).toString();
+	}
+
+}
+
+```
+
+
 
 VO
 ```
