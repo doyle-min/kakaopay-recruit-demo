@@ -1,10 +1,7 @@
 .gradle/
 .idea/
-/gradle/
 /out
 /data
-gradlew
-gradlew.bat
 .classpath
 .project
 /db
