@@ -17,6 +17,10 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
@@ -102,7 +106,11 @@ class CouponControllerTest {
 		String token = joinLoginAndGetToken("upload");
 		MultiValueMap<String, String> paramMap = new LinkedMultiValueMap<>();
 
-		MockMultipartFile firstFile = new MockMultipartFile("files", "csv_import_test.csv", "text/plain", "csv_import_test.csv".getBytes());
+		InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("csv_import_test.csv");
+		MockMultipartFile firstFile = new MockMultipartFile("files",
+				"csv_import_test.csv",
+				"text/plain",
+				is);
 
 		mockMvc.perform(MockMvcRequestBuilders.multipart("/coupon/upload")
 				.file(firstFile)

@@ -1,4 +1,4 @@
-basepath : /Users/bepo/workspace/kakao-pay-recruit-demo
+basepath : /Users/boogie/Workspaces/nautilus/kakaopay-recruit-demo
 
 server:
   port: 8080
@@ -11,7 +11,7 @@ spring:
 
   datasource:
     driver-class-name: org.h2.Driver
-    url: jdbc:h2:file:./db/coupondb;AUTO_SERVER=TRUE
+    url: jdbc:h2:file:./db/coupondb;AUTO_SERVER=true
     username: kakaopay
     password: coupon
 
@@ -20,7 +20,7 @@ spring:
       ddl-auto: create
     properties:
       hibernate:
-        show_sql: false
+        show_sql: true
         format_sql: false
 
   servlet:
