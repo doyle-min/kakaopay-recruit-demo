@@ -114,8 +114,6 @@ class CouponControllerTest {
 
 		mockMvc.perform(MockMvcRequestBuilders.multipart("/coupon/upload")
 				.file(firstFile)
-				.file(firstFile)
-				.file(firstFile)
 				.accept(MediaType.APPLICATION_JSON)
 				.header("Authorization", token))
 				.andExpect(status().is(200))
